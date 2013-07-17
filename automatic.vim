@@ -884,7 +884,7 @@ endfunction
 "        Automatic Sensitive List Generation
 "===============================================================
 function! KillAutoSense()
-    let line_index = 0
+    let line_index = 1
     let aft_kill = []
     while line_index <= line("$")
         let line = getline(line_index)
