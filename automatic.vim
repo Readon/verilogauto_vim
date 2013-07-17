@@ -443,7 +443,7 @@ function! AutoInst()
     let max_len = []
     let insts = GetInsts()
     if insts == {}
-        echo "No Instance found!"
+        "echo "No Instance found!"
         return
     endif
     call KillAutoInst()
