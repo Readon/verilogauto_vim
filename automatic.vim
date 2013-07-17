@@ -36,6 +36,7 @@ endif
 amenu &Verilog.&Header          :call AddHeader()<CR>
 amenu &Verilog.&Comment         :call AddComment()<CR>
 amenu &Verilog.-Automatic-      :
+amenu &Verilog.Auto&All         :call AutoAll()<CR>
 amenu &Verilog.Auto&Argument    :call AutoArg()<CR>
 amenu &Verilog.Auto&Instance    :call AutoInst()<CR>
 amenu &Verilog.Auto&Define      :call AutoDef()<CR>
@@ -59,51 +60,35 @@ amenu &Verilog.Always\ with\ posedge\ clock :call AddAlways("posedge", "")<CR>
 amenu &Verilog.Always\ with\ negedge\ clock :call AddAlways("negedge", "")<CR>
 amenu &Verilog.Combinational\ Always :call AddAlways("", "")<CR>
 
-if !exists(":Alpp")
-    command Alpp :call AddAlways("posedge", "posedge")
-endif
-if !exists(":Alpn")
-    command Alpn :call AddAlways("posedge", "negedge")
-endif
-if !exists(":Alnp")
-    command Alnp :call AddAlways("negedge", "posedge")
-endif
-if !exists(":Alnn")
-    command Alnn :call AddAlways("negedge", "negedge")
-endif
-if !exists(":Alp")
-    command Alp :call AddAlways("posedge", "")
-endif
-if !exists(":Aln")
-    command Aln :call AddAlways("negedge", "")
-endif
-if !exists(":Al")
-    command Al :call AddAlways("", "")
-endif
+command! Alpp :call AddAlways("posedge", "posedge")
+command! Alpn :call AddAlways("posedge", "negedge")
+command! Alnp :call AddAlways("negedge", "posedge")
+command! Alnn :call AddAlways("negedge", "negedge")
+command! Alp :call AddAlways("posedge", "")
+command! Aln :call AddAlways("negedge", "")
+command! Al :call AddAlways("", "")
 
 "===============================================================
 "        Add File Header
 "===============================================================
-if !exists("*AddHeader")
-    function AddHeader()
-        call append(0,  "//")
-        call append(1,  "// Created by         :".b:vlog_company)
-        call append(2,  "// Filename           :".expand("%"))
-        call append(3,  "// Author             :".$USER."(RDC)")
-        call append(4,  "// Created On         :".strftime("%Y-%m-%d %H:%M"))
-        call append(5,  "// Last Modified      : ")
-        call append(6,  "// Update Count       :".strftime("%Y-%m-%d %H:%M"))
-        call append(7,  "// Description        :")
-        call append(8,  "//                     ")
-        call append(9,  "//                     ")
-        call append(10, "//=======================================================================")
-    endfunction
-endif
+function! AddHeader()
+    call append(0,  "//")
+    call append(1,  "// Created by         :".b:vlog_company)
+    call append(2,  "// Filename           :".expand("%"))
+    call append(3,  "// Author             :".$USER."(RDC)")
+    call append(4,  "// Created On         :".strftime("%Y-%m-%d %H:%M"))
+    call append(5,  "// Last Modified      : ")
+    call append(6,  "// Update Count       :".strftime("%Y-%m-%d %H:%M"))
+    call append(7,  "// Description        :")
+    call append(8,  "//                     ")
+    call append(9,  "//                     ")
+    call append(10, "//=======================================================================")
+endfunction
 
 "===============================================================
 "        Add Comment Lines
 "===============================================================
-function AddComment()
+function! AddComment()
     let curr_line = line(".")
     call append(curr_line,  "//===========================================")
     call append(curr_line+1,"//       ")
@@ -113,7 +98,7 @@ endfunction
 "===============================================================
 "        Add an always statement
 "===============================================================
-function AddAlways(clk_edge, rst_edge)
+function! AddAlways(clk_edge, rst_edge)
     for line in getline(1, line("$"))
         if line =~ '^\s*\<input\>.*//\s*\<clock\>\s*$'
             let line = substitute(line, '^\s*\<input\>\s*', "", "")
@@ -167,7 +152,7 @@ endfunction
 "===============================================================
 "        Update Current Buffer
 "===============================================================
-function UpdateBuf(new_lines)
+function! UpdateBuf(new_lines)
     if len(a:new_lines) < line("$")
         for line_index in range(1, line("$"), 1)
             if line_index > len(a:new_lines)
@@ -186,7 +171,7 @@ endfunction
 "===============================================================
 "        Get Instance Name and its Path from Comments
 "===============================================================
-function GetInsts()
+function! GetInsts()
     let insts = {}
     for line in getline(1, line("$"))
         if line =~ '^\s*//\s*\<Instance\>:'
@@ -203,7 +188,7 @@ endfunction
 "===============================================================
 "       Remove Comments and Functions from Current Buffer
 "===============================================================
-function Filter(lines)
+function! Filter(lines)
     let aft_filter = []
     let line_index = 1
     while line_index <= len(a:lines)
@@ -245,7 +230,7 @@ endfunction
 "===============================================================
 "        Get Inputs and Ouputs from a Instance
 "===============================================================
-function GetIO(lines, inst_input, inst_output)
+function! GetIO(lines, inst_input, inst_output)
     let max_len = []
     let prefix_max_len = 0
     let suffix_max_len = 0
@@ -327,7 +312,7 @@ endfunction
 "===============================================================
 "        Automatic Argument Generation
 "===============================================================
-function KillAutoArg()
+function! KillAutoArg()
     let aft_kill = []
     let line_index = 1
     let line = ""
@@ -352,7 +337,7 @@ function KillAutoArg()
     call UpdateBuf(aft_kill)
 endfunction
 
-function AutoArg()
+function! AutoArg()
     let total_line = line("$")
     let inputs = []
     let outputs = []
@@ -419,7 +404,7 @@ endfunction
 "===============================================================
 "        Automatic Instance Generation
 "===============================================================
-function CalMargin(max_len, cur_len)
+function! CalMargin(max_len, cur_len)
     let margin = ""
     for i in range(1, a:max_len-a:cur_len+1, 1)
         let margin = margin." "
@@ -427,7 +412,7 @@ function CalMargin(max_len, cur_len)
     return margin
 endfunction
 
-function KillAutoInst()
+function! KillAutoInst()
     let line_index = 1
     let aft_kill = []
     while line_index <= line("$")
@@ -453,7 +438,7 @@ function KillAutoInst()
     call UpdateBuf(aft_kill)
 endfunction
 
-function AutoInst()
+function! AutoInst()
     let aft_inst = []
     let max_len = []
     let insts = GetInsts()
@@ -476,7 +461,8 @@ function AutoInst()
             let inst_output = {}
             let prefix_max_len = 0
             let suffix_max_len = 0
-            let lines = Filter(readfile(inst_file))
+            let inst_pwd = expand("%:p:h")
+            let lines = Filter(readfile(inst_pwd."/".inst_file))
             let max_len = GetIO(lines, inst_input, inst_output)
             let prefix_max_len = max_len[0]
             let suffix_max_len = max_len[1]
@@ -510,7 +496,7 @@ endfunction
 "===============================================================
 "        Automatic Signal Definition Generation
 "===============================================================
-function UserDef(lines)
+function! UserDef(lines)
     let user_def = {}
     for line in a:lines
         if line =~ '^\s*\<output\>\s*\<reg\>' || line =~ '^\s*\<output\>\s*\<signed\>'
@@ -529,7 +515,7 @@ function UserDef(lines)
     return user_def
 endfunction
 
-function PushSignal(signals, signal_name, signal_msb, signal_width, max_len, user_def)
+function! PushSignal(signals, signal_name, signal_msb, signal_width, max_len, user_def)
     if has_key(a:user_def, a:signal_name) == 1
         return a:max_len
         " Signal width comes from the right part of the assignmnet
@@ -566,7 +552,7 @@ function PushSignal(signals, signal_name, signal_msb, signal_width, max_len, use
     endif
 endfunction
 
-function GetInstExpress(insts)
+function! GetInstExpress(insts)
     if a:insts == []
         return '^//'
     endif
@@ -578,7 +564,7 @@ function GetInstExpress(insts)
     return express
 endfunction
 
-function KillAutoDef()
+function! KillAutoDef()
     let aft_kill = []
     let line_index = 1
     while line_index <= line("$")
@@ -611,7 +597,7 @@ function KillAutoDef()
     endif
 endfunction
 
-function AutoDef()
+function! AutoDef()
     let ff_reg = {}
     let comb_reg = {}
     let inst_wire = {}
@@ -765,7 +751,8 @@ function AutoDef()
                 echo "No Instances have been indicated!"
                 return
             elseif has_key(insts, inst_name)
-                let inst_lines = readfile(insts[inst_name])
+                let inst_pwd = expand("%:p:h")
+                let inst_lines = readfile(inst_pwd."/".insts[inst_name])
                 let inst_inputs = {}
                 let inst_outputs = {}
                 call GetIO(inst_lines, inst_inputs, inst_outputs)
@@ -896,7 +883,7 @@ endfunction
 "===============================================================
 "        Automatic Sensitive List Generation
 "===============================================================
-function KillAutoSense()
+function! KillAutoSense()
     let line_index = 0
     let aft_kill = []
     while line_index <= line("$")
@@ -939,7 +926,7 @@ function KillAutoSense()
     endif      
 endfunction
 
-function GetPars()
+function! GetPars()
     let parameters = []
     let line_index = 0
     while line_index <= line("$")
@@ -977,7 +964,7 @@ function GetPars()
     return express
 endfunction
 
-function GetFuns()
+function! GetFuns()
     let funs = []
     let line_index = 0
     let line = ""
@@ -996,7 +983,7 @@ function GetFuns()
     return funs
 endfunction
 
-function AutoSense()
+function! AutoSense()
     let line_index = 1
     let vlog_keys = '\(\<if\>\|\<else\>\|\<case\>\|\<casex\>\|\<casez\>\|\<begin\>\|\<end\>\|\<endcase\>\|\<default\>\)'
     let vlog_opts = '[=<>!~\^\-+*?:|&{}%(;),\[\]]'
@@ -1116,7 +1103,7 @@ endfunction
 "===============================================================
 "        Get Drivings
 "===============================================================
-function GetDriving(lines, driving_nets)
+function! GetDriving(lines, driving_nets)
     for line in a:lines
         if line =~ '^\s*\<\(reg\|wire\)\>'
             let net = substitute(line, ';.*$', "", "")
@@ -1135,7 +1122,7 @@ endfunction
 "===============================================================
 "        Get Loadings
 "===============================================================
-function GetLoading(lines, loading_nets, driving_nets, insts, insts_express, pars_express)
+function! GetLoading(lines, loading_nets, driving_nets, insts, insts_express, pars_express)
     let line_index = 1
     let vlog_keys = '\(\<if\>\|\<else\>\|\<case\>\|\<casex\>\|\<casez\>\|\<begin\>\|\<or\>'.
                 \'\|\<end\>\|\<endcase\>\|\<default\>\|\<always\>\|\<posedge\>\|\<negedge\>\)'
@@ -1305,7 +1292,8 @@ function GetLoading(lines, loading_nets, driving_nets, insts, insts_express, par
                 echo "No Instance have been indicated!"
                 return
             elseif has_key(a:insts, inst_name)
-                let inst_lines = readfile(a:insts[inst_name])
+                let inst_pwd = expand("%:p:h")
+                let inst_lines = readfile(inst_pwd."/".a:insts[inst_name])
                 let inst_inputs = {}
                 let inst_outputs = {}
                 call GetIO(inst_lines, inst_inputs, inst_outputs)
@@ -1372,7 +1360,7 @@ function GetLoading(lines, loading_nets, driving_nets, insts, insts_express, par
 endfunction
 
 
-function AutoCheck()
+function! AutoCheck()
     let insts = GetInsts()
     let insts_express = GetInstExpress(keys(insts))
     let pars_express = GetPars()
@@ -1399,7 +1387,7 @@ function AutoCheck()
     endif
 endfunction
 
-function GetCfg(lines)
+function! GetCfg(lines)
     let pars = {}
     for line in a:lines
         if line =~ '^\s*#\<data_width\>'
@@ -1446,7 +1434,7 @@ function GetCfg(lines)
     return pars
 endfunction
 
-function ClkGateCfg(lines)
+function! ClkGateCfg(lines)
     let i = 0
     let clk_gate = []
     while i < len(a:lines)
@@ -1463,7 +1451,7 @@ function ClkGateCfg(lines)
     return clk_gate
 endfunction
 
-function ReadReg(lines, pars, reg_list, reg_addr, reg_wr, inputs, outputs, reg_rdata, reg_scr, virtual_reg)
+function! ReadReg(lines, pars, reg_list, reg_addr, reg_wr, inputs, outputs, reg_rdata, reg_scr, virtual_reg)
     let i = 0
     let rdata = ""
     let scr_rst = []
@@ -1597,7 +1585,7 @@ function ReadReg(lines, pars, reg_list, reg_addr, reg_wr, inputs, outputs, reg_r
     return max_len
 endfunction
 
-function KillAutoReg()
+function! KillAutoReg()
     let line_index = 1
     let aft_kill = []
     while line_index <= line("$")
@@ -1634,7 +1622,7 @@ function KillAutoReg()
     call UpdateBuf(aft_kill)
 endfunction
 
-function AutoReg()
+function! AutoReg()
     let lines = []
     let aft_reg = []
     let reg_addr = {}
@@ -1647,7 +1635,8 @@ function AutoReg()
     let virtual_reg = []
     let clk_gate = []
     let reg_list = []
-    for line in readfile("config.txt")
+    let inst_pwd = expand("%:p:h")
+    for line in readfile(inst_pwd."/config.txt")
         if line !~ '^\s*//'
             if line =~ '\s*//.*$'
                 let line = substitute(line, '\s*//.*$', "", "")
@@ -1731,7 +1720,14 @@ function AutoReg()
     call UpdateBuf(aft_reg)
 endfunction
 
-function KillAuto()
+function! AutoAll()
+    call AutoArg()
+    call AutoInst()
+    call AutoDef()
+    call AutoSense()
+endfunction
+
+function! KillAuto()
     call KillAutoArg()
     call KillAutoInst()
     call KillAutoDef()
