@@ -805,13 +805,16 @@ function! AutoDef()
                     endif
                 else
                     let line_index = line_index + 1
-                    if line_index == len(lines)
+                    if line_index >= len(lines)
                         break
                     endif
                     let line = lines[line_index-1]
                 endif
             endwhile 
             let line_index = line_index + 1
+            if line_index >= len(lines)
+                break
+            endif
             let line = lines[line_index-1]
         elseif line =~ '^\s*\<endmodule\>'
             break
