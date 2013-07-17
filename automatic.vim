@@ -867,10 +867,13 @@ function! AutoDef()
                     endif
                 endfor
             endif
+        elseif line =~ '^\s*\<endmodule\>'
+            call add(aft_def, line)
+            break
         elseif line !~ '^\s*\<\(wire\|reg\|genvar\|integer\)\>'
             call add(aft_def, line)
-            "else
-            "   call add(aft_def, line)
+        "else
+        "    call add(aft_arg, line)
         endif
     endfor
     "for line_index in range(1, len(aft_def), 1)
