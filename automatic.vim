@@ -98,6 +98,8 @@ endfunction
 "===============================================================
 "        Add an always statement
 "===============================================================
+"TODO: this function still have problem on serveral lines in front to get
+"clock and reset name.
 function! AddAlways(clk_edge, rst_edge)
     for line in getline(1, line("$"))
         if line =~ '^\s*\<input\>.*//\s*\<clock\>\s*$'
