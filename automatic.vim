@@ -46,6 +46,7 @@ amenu &Verilog.Auto&Instance    :call AutoInst()<CR>
 amenu &Verilog.Auto&Define      :call AutoDef()<CR>
 amenu &Verilog.Auto&Sense       :call AutoSense()<CR>
 amenu &Verilog.Auto&Reg         :call AutoReg()<CR>
+amenu &Verilog.Auto&RefreshTags :call RefreshTags()<CR>
 amenu &Verilog.-QuickCheck-	:
 amenu &Verilog.Report\ No\ Loading/Driving\ nets :call AutoCheck()<CR>
 amenu &Verilog.-Kill-           :
@@ -73,7 +74,15 @@ command! Aln :call AddAlways("negedge", "")
 command! Al :call AddAlways("", "")
 
 "===============================================================
-"        Add File Header
+"        refresh tags in root dir
+"===============================================================
+function! RefreshTags()
+    exe "!find ./ -name '*.v' -exec ctags -a {} +"
+    let s:vlog_taglist = taglist(".")
+endfunction
+
+"===============================================================
+"        add file header
 "===============================================================
 function! AddHeader()
     call append(0,  "//")
@@ -179,14 +188,18 @@ endfunction
 "===============================================================
 function! GetInsts()
     let insts = {}
-    for line in getline(1, line("$"))
-        if line =~ '^\s*//\s*\<Instance\>:'
-            let line = substitute(line, '^\s*//\s*\<Instance\>:\s*', "", "")
-            let line = substitute(line, '\s*$', "", "")
-            let insts_name = substitute(line, '^.*/', "", "")
-            let insts_name = substitute(insts_name, '\.v$', "", "")
-            call extend(insts, {insts_name : line})
-        endif
+    for inst in s:vlog_taglist
+	if inst.kind == "m"
+            if has_key(insts, inst.name)
+		let fpath = expand("%:p:h")
+		let fdir = split(fpath, '/')[-1]
+		if match(inst.filename, fdir) >= 0
+		    let insts[inst.name] = inst.filename
+		endif
+	    else
+		call extend(insts, {inst.name : inst.filename})
+    	    endif
+	endif
     endfor
     return insts
 endfunction
@@ -467,8 +480,8 @@ function! AutoInst()
             let inst_output = {}
             let prefix_max_len = 0
             let suffix_max_len = 0
-            let inst_pwd = expand("%:p:h")
-            let lines = Filter(readfile(inst_pwd."/".inst_file))
+            "let inst_pwd = expand("%:p:h")
+            let lines = Filter(readfile(inst_file))
             let max_len = GetIO(lines, inst_input, inst_output)
             let prefix_max_len = max_len[0]
             let suffix_max_len = max_len[1]
@@ -757,8 +770,7 @@ function! AutoDef()
                 echo "No Instances have been indicated!"
                 return
             elseif has_key(insts, inst_name)
-                let inst_pwd = expand("%:p:h")
-                let inst_lines = readfile(inst_pwd."/".insts[inst_name])
+                let inst_lines = readfile(insts[inst_name])
                 let inst_inputs = {}
                 let inst_outputs = {}
                 call GetIO(inst_lines, inst_inputs, inst_outputs)
@@ -1304,8 +1316,7 @@ function! GetLoading(lines, loading_nets, driving_nets, pars_express)
                 echo "No Instance have been indicated!"
                 return
             elseif has_key(a:insts, inst_name)
-                let inst_pwd = expand("%:p:h")
-                let inst_lines = readfile(inst_pwd."/".a:insts[inst_name])
+                let inst_lines = readfile(a:insts[inst_name])
                 let inst_inputs = {}
                 let inst_outputs = {}
                 call GetIO(inst_lines, inst_inputs, inst_outputs)
