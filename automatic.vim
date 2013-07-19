@@ -1130,7 +1130,7 @@ endfunction
 "===============================================================
 "        Get Loadings
 "===============================================================
-function! GetLoading(lines, loading_nets, driving_nets, insts, insts_express, pars_express)
+function! GetLoading(lines, loading_nets, driving_nets, pars_express)
     let line_index = 1
     let vlog_keys = '\(\<if\>\|\<else\>\|\<case\>\|\<casex\>\|\<casez\>\|\<begin\>\|\<or\>'.
                 \'\|\<end\>\|\<endcase\>\|\<default\>\|\<always\>\|\<posedge\>\|\<negedge\>\)'
@@ -1369,15 +1369,13 @@ endfunction
 
 
 function! AutoCheck()
-    let insts = GetInsts()
-    let insts_express = GetInstExpress(keys(insts))
     let pars_express = GetPars()
     let lines = Filter(getline(1, line("$")))
     let loading_nets = []
     let driving_nets = []
     let fail = 0
     call GetDriving(lines, driving_nets)
-    call GetLoading(lines, loading_nets, driving_nets, insts, insts_express, pars_express)
+    call GetLoading(lines, loading_nets, driving_nets, pars_express)
     for net in driving_nets
         if count(loading_nets, net) == 0
             echo "No Loading Net: ".net
