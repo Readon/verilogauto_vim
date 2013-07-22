@@ -33,7 +33,7 @@ else
     let b:vlog_ind = 4
 endif
 if exists("s:vlog_taglist") == 0
-    exe "!find ./ -name '*.v' -exec ctags -a {} +"
+    "exe "!find ./ -name '*.v' -exec ctags -a {} +"
     let s:vlog_taglist = taglist(".")
 endif
 
@@ -77,7 +77,7 @@ command! Al :call AddAlways("", "")
 "        refresh tags in root dir
 "===============================================================
 function! RefreshTags()
-    exe "!find ./ -name '*.v' -exec ctags -a {} +"
+    "exe "!find ./ -name '*.v' -exec ctags -a {} +"
     let s:vlog_taglist = taglist(".")
 endfunction
 
